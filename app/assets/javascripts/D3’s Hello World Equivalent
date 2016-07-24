@@ -1,0 +1,55 @@
+D3’s Hello World Equivalent 
+
+I recently worked on a project that required us to display a huge amount of data. This function was taken care of with a javascript library called D3.js, which makes building tables and graphs pretty simple. Still, there was a time crunch and we ended up adapting code from blogs and examples around the web rather than write our own from scratch. The goal of this post is to slow things down and understand the basic steps for creating a simple D3 bar chart.
+
+First of all, motivation for learning D3:
+
+How cool is that?
+
+Ok.
+
+Quick note: the simplest way to build a bar chart would probably be just use d3 to build a couple of divs and style them into a pretty bar graph using CSS. But since the really powerful expression comes with Scalable Vector Graphics, that’s what we’re going to use. SVG is similar to html and can be placed onto an html webpage, but it breaks away from the largely rectangular limits of html and lets you draw all kinds of crazy stuff.
+
+Step 1: Get the D3 library. You can download the zip file from d3js.org or just toss this into your head
+
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+Step 2: Get some data. We’re going to use something simple: a 1-D array of integers (this is pretty much all going to be in javascript as D3 is a javascript library). Let’s say this represents the number of cups of coffee that I drink per day from Sunday to Saturday. 
+
+var cupsOfCoffee = [1, 2, 2, 4, 7, 9, 0];
+
+Step 3:  Get values for your charts parameters. For this example, lets set
+
+  var barHeight = 15;
+and 
+    var chartWidth = 500;
+
+Step 4: Get a scale for your data: This creates a function which will map our cupsOfCoffee array to a set of pixel size of our choosing. In this case, we want an input of zero to yield a bar with a length of zero pixels, while the largest input from cupsOfCoffee should map to the width of the chart.  
+
+
+var chartScale = d3.scale.linear()
+        .domain([0, d3.max(cupsOfCoffee)])
+        .range([0, chartWidth]);
+
+Step 5: Get a hold of an html element. This will be your base off of which you can build your chart. Let’s say that we have a div on our page with an id of coffee chart. Let’s put our chart in there. D3 has a method called select() which works similarly to a jquery selection
+
+    var chart = d3.select(“#coffeeChart”);
+
+Step 6: Get rectangles for your bar graph. SVG defines several shapes that developers can use, one of which is <rect>. The selectAll command here is weird. At this point, there are actually zero <rect> elements within our #coffeeChart. This is part of the magic of D3, which will iterate through our data and append a <rect> to the svg for each datum. All we have to do is use the data(), enter(), and append() methods to generate that iteration. We will set the height and width with the attr() method, which is also reminiscent of jquery. A good rule of thumb for D3 is to use attr() whenever changing the geometry of your chart, and using the style() method for any of the chart’s aesthetics. 
+
+  chart.selectAll("rect”)
+      .data(cupsOfCoffee)
+      .enter().append(“rect")
+      .attr("width", chartScale)
+      .attr("height", barHeight - 1);
+      .attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+
+Step 7: Get the rectangles off of each other. SVG has a coordinate system different from the coordinate plane we know from math class. The origin (0,0) is located in the top left corner of the SVG element. The values of x and y increase as you move down and to the right in the box. All elements added to the box are stacked on top of each other in the top left corner. This means that we need to use a transformation to slide the bars from this origin to their respective spots on the graph. The distance they slide will be equal to the width of each bar times the corresponding index in the array. We can just tack this method on the end of the block that already selects the <rect> elements.
+
+
+
+Sources for learning more:
+
+Codecademy actually has a course: https://www.codecademy.com/courses/web-beginner-en-kcP9b/0/1
+
+And here is a compilation of tutorials that anyone can add to on github. There are enough that I’m not even going to try to count them:  https://github.com/mbostock/d3/wiki/Tutorials
